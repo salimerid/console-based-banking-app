@@ -39,7 +39,7 @@ public class AccountServiceImpl implements AccountService {
             try {
                 String accNumber = scanner.nextLine();
                 accountNumber = Integer.parseInt(accNumber);
-                Account account = findAccount(accountNumber);
+                Account account = findAccountNumber(accountNumber);
                 if (account != null) {
                     System.out.println("This account number is already exists!.\nRe-Enter");
                 } else {
@@ -77,14 +77,14 @@ public class AccountServiceImpl implements AccountService {
                 System.out.println("Savings account requires minimum balance of " + minBalance_Savings + ".\nRe-Enter");
             } else if (type.equalsIgnoreCase("Salary") && balance < minBalance_Salary) {
                 System.out.println("Salary account requires minimum balance of " + minBalance_Salary + ".\nRe-Enter");
-            }else {
+            } else {
                 break;
             }
         }
 
         // Create and add account object
-        Account account = new Account(name, accountNumber, type, balance);
-        accounts.add(account);
+        Account accountData = new Account(name, accountNumber, type, balance);
+        accounts.add(accountData);
         System.out.println("Account created successfully!");
     }
 
@@ -99,10 +99,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void updateAccount(Scanner scanner) {
-        System.out.println("Enter account number to update:");
-        int accountNumber = scanner.nextInt();
-        Account account = findAccount(accountNumber);
-
+        Account account = findAccount(scanner, "Enter account number to update:");
         if (account != null) {
             System.out.println("Enter account name for update:");
             while (true) {
@@ -136,11 +133,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void deleteAccount(Scanner scanner) {
-        System.out.println("Enter account number to delete:");
-        int accountNumber = scanner.nextInt();
-
-        Account account = findAccount(accountNumber);
-
+        Account account = findAccount(scanner, "Enter account number to delete:");
         if (account != null) {
             accounts.remove(account);
             System.out.println("Account deleted successfully!");
@@ -151,11 +144,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void depositAmount(Scanner scanner) {
-        System.out.println("Enter account number to deposit into:");
-        int accountNumber = scanner.nextInt();
-
-        Account account = findAccount(accountNumber);
-
+        Account account = findAccount(scanner, "Enter account number to deposit into:");
         if (account != null) {
             System.out.println("Enter deposit amount:");
             while (true) {
@@ -177,11 +166,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void withdrawAmount(Scanner scanner) {
-        System.out.println("Enter account number to withdraw from:");
-        int accountNumber = scanner.nextInt();
-
-        Account account = findAccount(accountNumber);
-
+        Account account = findAccount(scanner, "Enter account number to withdraw from:");
         if (account != null) {
             System.out.println("Enter withdrawal amount:");
             while (true) {
@@ -192,10 +177,10 @@ public class AccountServiceImpl implements AccountService {
                         account.setBalance(account.getBalance() - withdrawalAmount);
                         System.out.println("Amount withdrawn successfully!");
                         displayAccountDetails(account);
-                        break;
                     } else {
                         System.out.println("Insufficient Balance!");
                     }
+                    break;
                 } catch (NumberFormatException e) {
                     System.out.println("Balance must be double");
                 }
@@ -207,11 +192,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void searchAccount(Scanner scanner) {
-        System.out.println("Enter account number to search:");
-        int accountNumber = scanner.nextInt();
-
-        Account account = findAccount(accountNumber);
-
+        Account account = findAccount(scanner, "Enter account number to search:");
         if (account != null) {
             System.out.println("Account found:");
             displayAccountDetails(account);
@@ -220,13 +201,23 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-    private Account findAccount(int accountNumber) {
-        for (Account account : accounts) {
-            if (account.getNumber() == accountNumber) {
-                return account;
+    private Account findAccount(Scanner scanner, String displayText) {
+        Account account;
+        System.out.println(displayText);
+        while (true) {
+            try {
+                int accountNumber = Integer.parseInt(scanner.nextLine());
+                account = accounts.stream().filter(acc -> acc.getNumber() == accountNumber).findFirst().orElse(null);
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Account number must be numeric.\nRe-Enter");
             }
         }
-        return null;
+        return account;
+    }
+
+    private Account findAccountNumber(int accountNumber) {
+       return accounts.stream().filter(acc -> acc.getNumber() == accountNumber).findFirst().orElse(null);
     }
 
     private void displayAccountDetails(Account account) {
